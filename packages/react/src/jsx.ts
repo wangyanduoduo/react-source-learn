@@ -2,8 +2,8 @@
  * @Author: wy
  * @Date: 2024-02-26 15:44:03
  * @LastEditors: wy
- * @LastEditTime: 2024-02-26 17:20:09
- * @FilePath: /笔记/react-source-learn/packages/react/jsx.ts
+ * @LastEditTime: 2024-02-26 18:35:59
+ * @FilePath: /笔记/react-source-learn/packages/react/src/jsx.ts
  * @Description:
  */
 import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
@@ -35,7 +35,7 @@ const ReactElement = function (
 export const jsx = (type: ElementType, config: any, ...maybeChildren: any) => {
 	let key: Key = null;
 	const props: Props = {};
-	const ref: Ref = null;
+	let ref: Ref = null;
 	// key 和 ref 是特殊的props
 	for (const prop in config) {
 		const val = config[prop];
