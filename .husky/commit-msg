@@ -1,1 +1,12 @@
+###
+ # @Author: wy
+ # @Date: 2024-02-26 11:31:51
+ # @LastEditors: wy
+ # @LastEditTime: 2024-02-27 11:32:18
+ # @FilePath: /笔记/react-source-learn/.husky/commit-msg
+ # @Description: 
+### 
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
 npx --no-install commitlint -e "$1"
