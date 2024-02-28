@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-26 16:32:56
  * @LastEditors: wy
- * @LastEditTime: 2024-02-26 16:51:13
+ * @LastEditTime: 2024-02-28 10:20:13
  * @FilePath: /笔记/react-source-learn/packages/shared/ReactTypes.ts
  * @Description:
  */
@@ -21,3 +21,5 @@ export interface ReactElement {
 	props: Props;
 	_mark: string;
 }
+
+export type Action<State> = State | ((prevState: State) => State);
