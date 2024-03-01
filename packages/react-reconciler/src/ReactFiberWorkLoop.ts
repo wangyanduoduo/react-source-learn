@@ -2,20 +2,44 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-02-27 16:04:59
+ * @LastEditTime: 2024-02-29 11:45:57
  * @FilePath: /笔记/react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
-import { FiberNode } from './ReactFiber';
+import { FiberNode, FiberRootNode, createWorkInProgress } from './ReactFiber';
 import { beginWork } from './ReactFiberBeginWork';
 import { completeWork } from './ReactFiberCompleteWork';
+import { HostRoot } from './ReactWorkTags';
 let workInProgressRoot: FiberNode | null; // 正在被执行的fiberNode
 
-function prepareFreshStack(root: FiberNode) {
-	workInProgressRoot = root;
+function prepareFreshStack(root: FiberRootNode) {
+	// root.current->hostRootFiber
+	workInProgressRoot = createWorkInProgress(root.current, {});
 }
 
-function renderRoot(root: FiberNode) {
+export function scheduleUpdateOnFiber(fiberNode: FiberNode) {
+	const root = markUpdateFromFiberToRoot(fiberNode);
+	renderRoot(root);
+}
+
+/**
+ * 通过fiberNode向上寻找到fiberRootNode
+ */
+function markUpdateFromFiberToRoot(fiberNode: FiberNode) {
+	let node = fiberNode;
+	let parent = node.return;
+	while (parent !== null) {
+		node = parent;
+		parent = node.return;
+	}
+	// 当前事hostRootFiber
+	if (node.tag == HostRoot) {
+		return node.stateNode;
+	}
+	return null;
+}
+
+function renderRoot(root: FiberRootNode) {
 	prepareFreshStack(root);
 	do {
 		try {
