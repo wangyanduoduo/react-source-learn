@@ -2,12 +2,12 @@
  * @Author: wy
  * @Date: 2024-02-27 14:43:41
  * @LastEditors: wy
- * @LastEditTime: 2024-02-29 11:41:59
- * @FilePath: /笔记/react-source-learn/packages/react-reconciler/src/ReactFiber.ts
+ * @LastEditTime: 2024-03-25 14:23:19
+ * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiber.ts
  * @Description:
  */
-import { Key, Ref, Props } from 'shared/ReactTypes';
-import { WorkTag } from './ReactWorkTags';
+import { Key, Ref, Props, ReactElement } from 'shared/ReactTypes';
+import { FunctionComponent, HostComponent, WorkTag } from './ReactWorkTags';
 import { Flags, NoFlags } from './ReactFiberFlags';
 import { Container } from 'hostConfig';
 
@@ -23,7 +23,7 @@ export class FiberNode {
 	sibling: FiberNode | null;
 	child: FiberNode | null;
 	alternate: FiberNode | null; // current 和 wip 之间的fiberNode相互指向
-	index: number;
+	index: number; // 同级别有很多元素，依次为0，1，2，3。。。
 
 	pendingProps: Props; // 在fiberNode作为工作单元刚开始工作的时候的props
 	memoizedProps: Props; // 在fiberNode作为工作单元结束工作的时候props
@@ -97,3 +97,18 @@ export const createWorkInProgress = (
 	wip.memoizedState = current.memoizedState;
 	return wip;
 };
+
+export function createFiberFromElement(element: ReactElement) {
+	const { type, key, props } = element;
+	let fiberTag: WorkTag = FunctionComponent;
+	if (typeof type === 'string') {
+		// div type: div
+		fiberTag = HostComponent;
+	} else if (typeof type !== 'function' && __DEV__) {
+		console.warn('未定义的type类型', element);
+	}
+
+	const fiber = new FiberNode(fiberTag, props, key);
+	fiber.type = type;
+	return fiber;
+}

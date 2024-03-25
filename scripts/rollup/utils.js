@@ -2,8 +2,8 @@
  * @Author: wy
  * @Date: 2024-02-26 18:06:52
  * @LastEditors: wy
- * @LastEditTime: 2024-02-26 18:34:52
- * @FilePath: /笔记/react-source-learn/scripts/rollup/utils.js
+ * @LastEditTime: 2024-03-22 16:44:42
+ * @FilePath: /react-source-learn/scripts/rollup/utils.js
  * @Description:
  */
 
@@ -11,6 +11,7 @@ import path from 'path';
 import fs from 'fs';
 import ts from 'rollup-plugin-typescript2';
 import cjs from '@rollup/plugin-commonjs';
+import replace from '@rollup/plugin-replace';
 
 const pkgPath = path.resolve(__dirname, '../../packages');
 const distPath = path.resolve(__dirname, '../../dist/node_modules');
@@ -39,6 +40,9 @@ export const getPackageJson = (pkgName) => {
  * // cjs 符合umd
  * // ts 打包转化ts
  */
-export const getBaseRollupPlugins = ({ typescript } = {}) => {
-	return [cjs(), ts(typescript)];
+export const getBaseRollupPlugins = ({
+	alias = { __DEV__: true }, // 在全局使用__DEV__
+	typescript,
+} = {}) => {
+	return [replace(alias), cjs(), ts(typescript)];
 };
