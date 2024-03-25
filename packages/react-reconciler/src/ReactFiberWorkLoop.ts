@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 14:45:06
+ * @LastEditTime: 2024-03-25 16:39:52
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
@@ -63,6 +63,10 @@ function renderRoot(root: FiberRootNode) {
 			workInProgressRoot = null;
 		}
 	} while (true);
+
+	const finishedWork = root.current.alternate;
+	root.finishedWork = finishedWork;
+	commitRoot(root);
 }
 
 function workLoop() {

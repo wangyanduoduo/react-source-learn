@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 14:43:41
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 14:23:19
+ * @LastEditTime: 2024-03-25 16:31:03
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiber.ts
  * @Description:
  */
@@ -31,6 +31,7 @@ export class FiberNode {
 	memoizedState: any;
 
 	flags: Flags; // 当前节点的操作类型 例如 插入，删除 flags 被统称为副作用
+	subtreeFlags: Flags; // 子树的操作类型
 
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		this.tag = tag;
@@ -51,6 +52,7 @@ export class FiberNode {
 		this.updateQueue = null;
 
 		this.flags = NoFlags;
+		this.subtreeFlags = NoFlags;
 	}
 }
 
@@ -85,9 +87,9 @@ export const createWorkInProgress = (
 		current.alternate = wip;
 	} else {
 		// update
-
 		wip.pendingProps = pendingProps;
 		wip.flags = NoFlags; // 初始化所有副作用
+		wip.subtreeFlags = NoFlags; // 初始化所有副作用
 	}
 
 	// 复用current中的部分属性
