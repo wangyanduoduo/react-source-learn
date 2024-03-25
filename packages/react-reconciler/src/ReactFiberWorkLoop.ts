@@ -2,13 +2,14 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 16:39:52
+ * @LastEditTime: 2024-03-25 17:14:23
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
 import { FiberNode, FiberRootNode, createWorkInProgress } from './ReactFiber';
 import { beginWork } from './ReactFiberBeginWork';
 import { completeWork } from './ReactFiberCompleteWork';
+import { MutationMask, NoFlags } from './ReactFiberFlags';
 import { HostRoot } from './ReactWorkTags';
 let workInProgressRoot: FiberNode | null; // 正在被执行的fiberNode
 
@@ -66,7 +67,37 @@ function renderRoot(root: FiberRootNode) {
 
 	const finishedWork = root.current.alternate;
 	root.finishedWork = finishedWork;
+	/**
+	 * commit 阶段包含如下2个步骤
+	 * - beforeMutation
+	 * - mutation
+	 * layout
+	 */
 	commitRoot(root);
+}
+
+function commitRoot(root: FiberRootNode) {
+	const finishedWork = root.finishedWork;
+	if (finishedWork === null) {
+		return;
+	}
+	if (__DEV__) {
+		console.warn('commit阶段开始', finishedWork);
+	}
+
+	const subtreeHasEffect =
+		(finishedWork.subtreeFlags & MutationMask) !== NoFlags;
+	const rootHasEffect = (finishedWork.flags & MutationMask) !== NoFlags;
+	if (subtreeHasEffect || rootHasEffect) {
+		// beforeMutation
+		// mutation
+		root.current = finishedWork;
+		// layout
+	} else {
+		root.current = finishedWork;
+	}
+
+	root.finishedWork = null;
 }
 
 function workLoop() {

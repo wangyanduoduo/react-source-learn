@@ -2,8 +2,8 @@
  * @Author: wy
  * @Date: 2024-02-27 15:05:42
  * @LastEditors: wy
- * @LastEditTime: 2024-02-27 15:17:15
- * @FilePath: /笔记/react-source-learn/packages/react-reconciler/src/ReactFiberFlags.ts
+ * @LastEditTime: 2024-03-25 17:10:28
+ * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberFlags.ts
  * @Description:
  */
 export type Flags = number;
@@ -16,3 +16,7 @@ export const Hydrating = /*                    */ 0b0000000000000001000000000000
 
 // You can change the rest (and add more).
 export const Update = /*                       */ 0b0000000000000000000000000100;
+
+export const ChildDeletion = /*                */ 0b0000000000000000000000010000;
+
+export const MutationMask = Placement | Update | ChildDeletion;
