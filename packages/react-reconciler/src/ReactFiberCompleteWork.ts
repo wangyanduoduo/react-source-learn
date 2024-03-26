@@ -1,5 +1,6 @@
 import {
 	appendInitialChild,
+	Container,
 	createInstance,
 	createTextInstance,
 } from 'hostConfig';
@@ -11,7 +12,7 @@ import { NoFlags } from './ReactFiberFlags';
  * @Author: wy
  * @Date: 2024-02-27 15:37:10
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 16:36:18
+ * @LastEditTime: 2024-03-26 14:30:09
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCompleteWork.ts
  * @Description:
  */
@@ -26,7 +27,8 @@ export const completeWork = (wip: FiberNode) => {
 			} else {
 				// 构建dom
 				// dom插入dom树
-				const instance = createInstance(wip.type, newProps);
+				// const instance = createInstance(wip.type, newProps);
+				const instance = createInstance(wip.type);
 				appendAllChildren(instance, wip);
 				wip.stateNode = instance;
 			}
@@ -53,7 +55,7 @@ export const completeWork = (wip: FiberNode) => {
 	}
 };
 
-function appendAllChildren(parent: FiberNode, wip: FiberNode) {
+function appendAllChildren(parent: Container, wip: FiberNode) {
 	let node = wip.child;
 	while (node !== null) {
 		if (node.tag === HostComponent || node.tag === HostText) {

@@ -2,12 +2,13 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 17:14:23
+ * @LastEditTime: 2024-03-26 13:56:02
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
 import { FiberNode, FiberRootNode, createWorkInProgress } from './ReactFiber';
 import { beginWork } from './ReactFiberBeginWork';
+import { commitMutationEffects } from './ReactFiberCommitWork';
 import { completeWork } from './ReactFiberCompleteWork';
 import { MutationMask, NoFlags } from './ReactFiberFlags';
 import { HostRoot } from './ReactWorkTags';
@@ -84,6 +85,8 @@ function commitRoot(root: FiberRootNode) {
 	if (__DEV__) {
 		console.warn('commit阶段开始', finishedWork);
 	}
+	// 重置
+	root.finishedWork = null;
 
 	const subtreeHasEffect =
 		(finishedWork.subtreeFlags & MutationMask) !== NoFlags;
@@ -91,13 +94,12 @@ function commitRoot(root: FiberRootNode) {
 	if (subtreeHasEffect || rootHasEffect) {
 		// beforeMutation
 		// mutation
+		commitMutationEffects(finishedWork);
 		root.current = finishedWork;
 		// layout
 	} else {
 		root.current = finishedWork;
 	}
-
-	root.finishedWork = null;
 }
 
 function workLoop() {

@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-26 18:06:52
  * @LastEditors: wy
- * @LastEditTime: 2024-03-22 16:44:42
+ * @LastEditTime: 2024-03-26 15:11:54
  * @FilePath: /react-source-learn/scripts/rollup/utils.js
  * @Description:
  */
@@ -41,7 +41,7 @@ export const getPackageJson = (pkgName) => {
  * // ts 打包转化ts
  */
 export const getBaseRollupPlugins = ({
-	alias = { __DEV__: true }, // 在全局使用__DEV__
+	alias = { __DEV__: true, preventAssignment: true }, // 在全局使用__DEV__
 	typescript,
 } = {}) => {
 	return [replace(alias), cjs(), ts(typescript)];
