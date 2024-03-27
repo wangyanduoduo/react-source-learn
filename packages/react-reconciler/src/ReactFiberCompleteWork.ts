@@ -5,14 +5,19 @@ import {
 	createTextInstance,
 } from 'hostConfig';
 import { FiberNode } from './ReactFiber';
-import { HostComponent, HostRoot, HostText } from './ReactWorkTags';
+import {
+	FunctionComponent,
+	HostComponent,
+	HostRoot,
+	HostText,
+} from './ReactWorkTags';
 import { NoFlags } from './ReactFiberFlags';
 
 /*
  * @Author: wy
  * @Date: 2024-02-27 15:37:10
  * @LastEditors: wy
- * @LastEditTime: 2024-03-26 14:30:09
+ * @LastEditTime: 2024-03-27 11:27:09
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCompleteWork.ts
  * @Description:
  */
@@ -35,6 +40,9 @@ export const completeWork = (wip: FiberNode) => {
 			bubbleProperties(wip);
 			return null;
 		case HostRoot:
+			bubbleProperties(wip);
+			return null;
+		case FunctionComponent:
 			bubbleProperties(wip);
 			return null;
 		case HostText:

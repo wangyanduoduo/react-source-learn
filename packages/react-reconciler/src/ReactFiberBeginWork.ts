@@ -2,18 +2,24 @@
  * @Author: wy
  * @Date: 2024-02-27 15:35:11
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 14:47:47
+ * @LastEditTime: 2024-03-27 11:26:37
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberBeginWork.ts
  * @Description:
  */
 import { ReactElement } from 'shared/ReactTypes';
 import { FiberNode } from './ReactFiber';
 import { processUpdateQueue, UpdateQueue } from './ReactFiberClassUpdateQueue';
-import { HostComponent, HostRoot, HostText } from './ReactWorkTags';
+import {
+	FunctionComponent,
+	HostComponent,
+	HostRoot,
+	HostText,
+} from './ReactWorkTags';
 import {
 	mountChildrenFibers,
 	reconcileChildrenFibers,
 } from './ReactChildFiber';
+import { renderWithHooks } from './ReactFiberHooks';
 /**
  * 寻找子节点
  * @param fiber
@@ -27,6 +33,8 @@ export const beginWork = (wip: FiberNode) => {
 			return updateHostRoot(wip);
 		case HostComponent:
 			return updateHostComponent(wip);
+		case FunctionComponent:
+			return updateFunctionComponent(wip);
 		case HostText:
 			return null;
 		default:
@@ -62,6 +70,11 @@ function updateHostComponent(wip: FiberNode) {
 	const nextProps = wip.pendingProps;
 	const nextChildren = nextProps.children;
 	reconcilerChildren(wip, nextChildren);
+	return wip.child;
+}
+
+function updateFunctionComponent(wip: FiberNode) {
+	reconcilerChildren(wip, renderWithHooks(wip));
 	return wip.child;
 }
 
