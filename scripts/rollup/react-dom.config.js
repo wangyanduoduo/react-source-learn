@@ -2,14 +2,14 @@
  * @Author: wy
  * @Date: 2024-02-26 18:06:06
  * @LastEditors: wy
- * @LastEditTime: 2024-03-26 15:07:06
+ * @LastEditTime: 2024-03-27 17:59:28
  * @FilePath: /react-source-learn/scripts/rollup/react-dom.config.js
  * @Description:
  */
 import alias from '@rollup/plugin-alias';
 import generatePackageJson from 'rollup-plugin-generate-package-json';
 import { resolvePkgPath, getPackageJson, getBaseRollupPlugins } from './utils';
-const { name, module } = getPackageJson('react-dom'); // package.json 中name
+const { name, module, peerDependencies } = getPackageJson('react-dom'); // package.json 中name
 
 const pkgPath = resolvePkgPath(name);
 const pkgDistPath = resolvePkgPath(name, true);
@@ -30,6 +30,7 @@ export default [
 				format: 'umd',
 			},
 		],
+		external: [...Object.keys(peerDependencies)], // 排除不需要打包的依赖
 		plugins: [
 			...getBaseRollupPlugins(),
 			alias({
