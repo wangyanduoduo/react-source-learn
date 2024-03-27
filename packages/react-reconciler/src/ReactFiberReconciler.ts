@@ -2,8 +2,8 @@
  * @Author: wy
  * @Date: 2024-02-29 10:40:40
  * @LastEditors: wy
- * @LastEditTime: 2024-02-29 11:45:41
- * @FilePath: /笔记/react-source-learn/packages/react-reconciler/src/ReactFiberReconciler.ts
+ * @LastEditTime: 2024-03-27 09:59:53
+ * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberReconciler.ts
  * @Description:
  */
 import { Container } from 'hostConfig';
@@ -26,13 +26,13 @@ import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
 export const createContainer = (container: Container) => {
 	const hostRootFiber = new FiberNode(HostRoot, {}, null);
 	const root = new FiberRootNode(container, hostRootFiber);
-	hostRootFiber.updateQueue = createUpdateQueue();
+	hostRootFiber.updateQueue = createUpdateQueue(); // 连接更新机制
 	return root;
 };
 
 /**
  * render触发updateContainer
- * root.render(<App />);
+ * root.render(<App />);在updateContainer中使用的就是element=<app>
  * 更新的时候，也需要container
  * 需要把这个方法和workLoop中的renderRoot连接起来
  */

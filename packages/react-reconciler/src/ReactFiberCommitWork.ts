@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-26 10:36:42
  * @LastEditors: wy
- * @LastEditTime: 2024-03-26 14:36:21
+ * @LastEditTime: 2024-03-27 10:25:09
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCommitWork.ts
  * @Description:
  */
@@ -16,6 +16,7 @@ import { HostComponent, HostRoot, HostText } from './ReactWorkTags';
  */
 let nextEffect: FiberNode | null = null;
 export const commitMutationEffects = (finishedWork: FiberNode) => {
+	console.warn('commitMutationEffects开始');
 	nextEffect = finishedWork;
 	while (nextEffect !== null) {
 		const child: FiberNode | null = nextEffect.child;
@@ -35,15 +36,16 @@ export const commitMutationEffects = (finishedWork: FiberNode) => {
 					nextEffect = sibling;
 					break up;
 				}
+				// 兄弟节点查找完成，向上遍历
+				nextEffect = nextEffect.return;
 			}
-			// 兄弟节点查找完成，向上遍历
-			nextEffect = nextEffect.return;
 		}
 	}
 };
 
 function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
 	const flags = finishedWork.flags;
+
 	// 插入
 	if ((flags & Placement) !== NoFlags) {
 		commitPlacement(finishedWork);
@@ -55,9 +57,10 @@ const commitPlacement = (finishedWork: FiberNode) => {
 	if (__DEV__) {
 		console.warn('执行placement操作');
 	}
+
 	// parentDOM 用于插入
 	const hostParent = getHostParent(finishedWork);
-	// 开始找被插入的节点Dom
+	// // 开始找被插入的节点Dom
 	if (hostParent) {
 		appendPlacementNodeIntoContainer(finishedWork, hostParent);
 	}
@@ -81,6 +84,7 @@ const getHostParent = (finishedWork: FiberNode) => {
 	if (__DEV__) {
 		console.warn('未找到host parent');
 	}
+	return null;
 };
 
 /**
@@ -92,10 +96,11 @@ const appendPlacementNodeIntoContainer = (
 	hostParent: Container,
 ) => {
 	if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
-		appendChildToContainer(finishedWork.stateNode, hostParent);
+		appendChildToContainer(hostParent, finishedWork.stateNode);
+
 		return;
 	}
-	// 继续查找需要被插入的节点
+	// // 继续查找需要被插入的节点
 	const child = finishedWork.child;
 	if (child !== null) {
 		appendPlacementNodeIntoContainer(child, hostParent);
