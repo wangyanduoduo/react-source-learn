@@ -2,11 +2,12 @@
  * @Author: wy
  * @Date: 2024-02-27 18:05:43
  * @LastEditors: wy
- * @LastEditTime: 2024-02-28 11:09:50
- * @FilePath: /笔记/react-source-learn/packages/react-reconciler/src/ReactFiberClassUpdateQueue.ts
+ * @LastEditTime: 2024-03-28 13:35:41
+ * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberClassUpdateQueue.ts
  * @Description:
  */
 
+import { Dispatch } from 'react/src/currentDispatcher';
 import { Action } from 'shared/ReactTypes';
 
 /**
@@ -29,6 +30,7 @@ export interface UpdateQueue<State> {
 	shared: {
 		pending: Update<State> | null;
 	};
+	dispatch: Dispatch<State> | null;
 }
 
 export const createUpdate = <State>(action: Action<State>): Update<State> => {
@@ -46,6 +48,7 @@ export const createUpdateQueue = <State>() => {
 		shared: {
 			pending: null,
 		},
+		dispatch: null,
 	} as UpdateQueue<State>;
 };
 
@@ -62,6 +65,7 @@ export const enqueueUpdate = <State>(
 /**
  * 处理updateQueue中的update
  * update中的action包含state
+ * 计算状态的最新值
  *
  * 源码中不是这样的
  * 现在是伪代码

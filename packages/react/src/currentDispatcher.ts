@@ -2,14 +2,14 @@
  * @Author: wy
  * @Date: 2024-03-27 17:10:48
  * @LastEditors: wy
- * @LastEditTime: 2024-03-27 17:44:27
+ * @LastEditTime: 2024-03-28 11:25:19
  * @FilePath: /react-source-learn/packages/react/src/currentDispatcher.ts
  * @Description:
  */
 
 import { Action } from 'shared/ReactTypes';
 
-type Dispatch<state> = (action: Action<state>) => void;
+export type Dispatch<state> = (action: Action<state>) => void;
 
 export interface Dispatcher {
 	useState: <T>(initialState: (() => T) | T) => [T, Dispatch<T>];
