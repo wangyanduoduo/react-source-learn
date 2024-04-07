@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-26 18:06:06
  * @LastEditors: wy
- * @LastEditTime: 2024-03-27 17:59:28
+ * @LastEditTime: 2024-04-07 11:27:04
  * @FilePath: /react-source-learn/scripts/rollup/react-dom.config.js
  * @Description:
  */
@@ -21,12 +21,12 @@ export default [
 		output: [
 			{
 				file: `${pkgDistPath}/index.js`,
-				name: 'index.js',
+				name: 'ReactDOM',
 				format: 'umd',
 			},
 			{
 				file: `${pkgDistPath}/client.js`,
-				name: 'client.js',
+				name: 'client',
 				format: 'umd',
 			},
 		],
@@ -52,5 +52,18 @@ export default [
 				}),
 			}),
 		],
+	},
+	// react-test-utils
+	{
+		input: `${pkgPath}/test-utils.ts`,
+		output: [
+			{
+				file: `${pkgDistPath}/test-utils.js`,
+				name: 'testUtils',
+				format: 'umd',
+			},
+		],
+		external: ['react', 'react-dom'], // 排除不需要打包的依赖
+		plugins: [...getBaseRollupPlugins()],
 	},
 ];
