@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-03-27 10:11:32
+ * @LastEditTime: 2024-04-08 14:01:12
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
@@ -65,7 +65,7 @@ function renderRoot(root: FiberRootNode) {
 			workInProgressRoot = null;
 		}
 	} while (true);
-
+	// 获取到完成递归的fiberTree
 	const finishedWork = root.current.alternate;
 	root.finishedWork = finishedWork;
 	/**

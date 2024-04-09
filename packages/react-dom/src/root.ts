@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-26 14:23:52
  * @LastEditors: wy
- * @LastEditTime: 2024-03-26 18:13:08
+ * @LastEditTime: 2024-04-07 14:35:33
  * @FilePath: /react-source-learn/packages/react-dom/src/root.ts
  * @Description:
  */
@@ -19,7 +19,7 @@ export function createRoot(container: Container) {
 	const root = createContainer(container);
 	return {
 		render(element: ReactElement) {
-			updateContainer(element, root);
+			return updateContainer(element, root);
 		},
 	};
 }

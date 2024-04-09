@@ -2,22 +2,53 @@ import { ReactElement } from 'shared/ReactTypes';
 import { createFiberFromElement, FiberNode } from './ReactFiber';
 import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
 import { HostText } from './ReactWorkTags';
-import { Placement } from './ReactFiberFlags';
+import { ChildDeletion, Placement } from './ReactFiberFlags';
 
 /*
  * @Author: wy
  * @Date: 2024-03-25 11:37:36
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 14:29:08
+ * @LastEditTime: 2024-04-09 18:01:45
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactChildFiber.ts
  * @Description:
  */
 function childReconciler(shouldTrackEffects: boolean) {
+	function deleteChild(returnFiber: FiberNode, childToDelete: FiberNode) {
+		if (!shouldTrackEffects) {
+			return;
+		}
+
+		const deletions = returnFiber.deletions;
+		if (deletions === null) {
+			returnFiber.deletions = [childToDelete];
+			returnFiber.flags |= ChildDeletion;
+		}
+	}
 	function reconcileSingleElement(
 		returnFiber: FiberNode,
 		currentFiber: FiberNode | null,
 		newChild: ReactElement,
 	) {
+		// update流程
+		const { key, type, $$typeof } = newChild;
+		if (currentFiber !== null) {
+			if (key === currentFiber.key) {
+				// 	确认newChild是不是reactElementType 元素
+				if ($$typeof === REACT_ELEMENT_TYPE) {
+					if (type === currentFiber.type) {
+						// 相等要删除原来的
+					}
+				} else {
+					if (__DEV__) {
+						console.warn('还未实现的react类型', newChild);
+					}
+				}
+			} else {
+				// 删除旧节点
+			}
+		}
+
+		// mount时的流程
 		const fiber = createFiberFromElement(newChild);
 		fiber.return = returnFiber;
 		return fiber;

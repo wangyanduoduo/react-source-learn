@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-29 10:40:40
  * @LastEditors: wy
- * @LastEditTime: 2024-03-27 09:59:53
+ * @LastEditTime: 2024-04-07 16:52:53
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberReconciler.ts
  * @Description:
  */
@@ -41,7 +41,7 @@ export const updateContainer = (
 	element: ReactElement | null,
 	root: FiberRootNode,
 ) => {
-	const hostRootFiber = root.current;
+	const hostRootFiber = root.current; // mount的时候current指向的就是render时候的<App>
 	const update = createUpdate<ReactElement | null>(element);
 	enqueueUpdate(
 		hostRootFiber.updateQueue as UpdateQueue<ReactElement | null>,

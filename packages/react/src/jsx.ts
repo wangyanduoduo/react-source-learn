@@ -1,9 +1,10 @@
+/* eslint-disable valid-typeof */
 /*
  * @Author: wy
  * @Date: 2024-02-26 15:44:03
  * @LastEditors: wy
- * @LastEditTime: 2024-02-27 10:44:58
- * @FilePath: /笔记/react-source-learn/packages/react/src/jsx.ts
+ * @LastEditTime: 2024-04-07 14:42:31
+ * @FilePath: /react-source-learn/packages/react/src/jsx.ts
  * @Description:
  */
 import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
@@ -56,14 +57,14 @@ export const jsx = (type: ElementType, config: any, ...maybeChildren: any) => {
 		if ({}.hasOwnProperty.call(config, prop)) {
 			props[prop] = val;
 		}
+	}
 
-		const childrenLen = maybeChildren.length;
-		if (childrenLen) {
-			if (childrenLen === 1) {
-				props.children = maybeChildren[0];
-			} else {
-				props.children = maybeChildren;
-			}
+	const childrenLen = maybeChildren.length;
+	if (childrenLen) {
+		if (childrenLen === 1) {
+			props.children = maybeChildren[0];
+		} else {
+			props.children = maybeChildren;
 		}
 	}
 
@@ -98,3 +99,11 @@ export const jsxDEV = (type: ElementType, config: any) => {
 
 	return ReactElement(type, key, ref, props);
 };
+
+export function isValidElement(object: any) {
+	return (
+		typeof object === 'object' &&
+		object !== null &&
+		object.$$typeof === REACT_ELEMENT_TYPE
+	);
+}

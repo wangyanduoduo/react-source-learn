@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-26 10:36:42
  * @LastEditors: wy
- * @LastEditTime: 2024-03-27 10:25:09
+ * @LastEditTime: 2024-04-08 15:22:24
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCommitWork.ts
  * @Description:
  */
@@ -30,6 +30,7 @@ export const commitMutationEffects = (finishedWork: FiberNode) => {
 			// 没有effect的节点了，开始向上遍历，在向上遍历的时候，开始真正的操作effect
 			// 开始查找兄弟节点
 			up: while (nextEffect !== null) {
+				// 操作当前fiber的flags
 				commitMutationEffectsOnFiber(nextEffect);
 				const sibling: FiberNode | null = nextEffect.sibling;
 				if (sibling !== null) {

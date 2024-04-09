@@ -66,7 +66,6 @@ export const enqueueUpdate = <State>(
  * 处理updateQueue中的update
  * update中的action包含state
  * 计算状态的最新值
- *
  * 源码中不是这样的
  * 现在是伪代码
  */

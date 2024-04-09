@@ -16,7 +16,7 @@ export type ElementType = any;
 // 对应ReactElementType
 export interface ReactElement {
 	$$typeof: symbol | number;
-	type: ElementType; // 元素的标签 <div>
+	type: ElementType; // 例如div
 	key: Key;
 	ref: Ref;
 	props: Props;

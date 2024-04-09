@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 14:43:41
  * @LastEditors: wy
- * @LastEditTime: 2024-03-25 16:31:03
+ * @LastEditTime: 2024-04-09 17:58:46
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiber.ts
  * @Description:
  */
@@ -17,7 +17,7 @@ export class FiberNode {
 
 	key: Key;
 	stateNode: any; // 当前fiberNode对应的真实的dom 例如 div hostRootFiber的stateNode指向fiberRootNode
-	type: any; // 对应的element的函数， 例如functionComponent的函数
+	type: any; // 对应的element的函数， 例如functionComponent的函数，如果节点是一个函数，type就是函数本身
 
 	return: FiberNode | null;
 	sibling: FiberNode | null;
@@ -32,6 +32,7 @@ export class FiberNode {
 
 	flags: Flags; // 当前节点的操作类型 例如 插入，删除 flags 被统称为副作用
 	subtreeFlags: Flags; // 子树的操作类型
+	deletions: FiberNode[] | null;
 
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		this.tag = tag;
@@ -53,6 +54,7 @@ export class FiberNode {
 
 		this.flags = NoFlags;
 		this.subtreeFlags = NoFlags;
+		this.deletions = null;
 	}
 }
 
