@@ -11,7 +11,7 @@ import {
 	HostRoot,
 	HostText,
 } from './ReactWorkTags';
-import { NoFlags } from './ReactFiberFlags';
+import { NoFlags, Update } from './ReactFiberFlags';
 
 /*
  * @Author: wy
@@ -21,6 +21,10 @@ import { NoFlags } from './ReactFiberFlags';
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCompleteWork.ts
  * @Description:
  */
+
+function markUpdate(fiber: FiberNode) {
+	fiber.flags |= Update;
+}
 export const completeWork = (wip: FiberNode) => {
 	const newProps = wip.pendingProps;
 	const current = wip.alternate;
@@ -48,6 +52,11 @@ export const completeWork = (wip: FiberNode) => {
 		case HostText:
 			if (current !== null && wip.stateNode) {
 				// update
+				const oldText = wip.memoizedProps.content;
+				const newText = newProps.content;
+				if (oldText !== newText) {
+					markUpdate(wip);
+				}
 			} else {
 				// 构建dom
 				const instance = createTextInstance(newProps.content);

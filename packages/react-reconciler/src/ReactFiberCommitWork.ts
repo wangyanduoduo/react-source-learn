@@ -2,13 +2,13 @@
  * @Author: wy
  * @Date: 2024-03-26 10:36:42
  * @LastEditors: wy
- * @LastEditTime: 2024-04-08 15:22:24
+ * @LastEditTime: 2024-04-10 14:25:53
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCommitWork.ts
  * @Description:
  */
-import { appendChildToContainer, Container } from 'hostConfig';
+import { appendChildToContainer, commitUpdate, Container } from 'hostConfig';
 import { FiberNode, FiberRootNode } from './ReactFiber';
-import { MutationMask, NoFlags, Placement } from './ReactFiberFlags';
+import { MutationMask, NoFlags, Placement, Update } from './ReactFiberFlags';
 import { HostComponent, HostRoot, HostText } from './ReactWorkTags';
 
 /**
@@ -51,6 +51,11 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
 	if ((flags & Placement) !== NoFlags) {
 		commitPlacement(finishedWork);
 		finishedWork.flags &= ~Placement; // 插入完成了，把完成的标记取消
+	}
+	// 更新
+	if ((flags & Update) !== NoFlags) {
+		commitUpdate(finishedWork);
+		finishedWork.flags &= ~Update; // 更新完成了，把完成的标记取消
 	}
 }
 
