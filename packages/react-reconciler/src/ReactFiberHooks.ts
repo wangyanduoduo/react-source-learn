@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-27 11:24:07
  * @LastEditors: wy
- * @LastEditTime: 2024-03-28 13:54:45
+ * @LastEditTime: 2024-04-11 14:07:10
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberHooks.ts
  * @Description:
  */
@@ -36,8 +36,9 @@ let currentlyRenderingFiber: FiberNode | null = null;
 let workInProgressHook: Hook | null = null;
 
 export const renderWithHooks = (wip: FiberNode) => {
+	// 赋值
 	currentlyRenderingFiber = wip;
-	wip.memoizedState = null;
+	wip.memoizedState = null; // 重置
 	const current = wip.alternate;
 	if (current !== null) {
 		// update
@@ -48,6 +49,8 @@ export const renderWithHooks = (wip: FiberNode) => {
 	const Component = wip.type;
 	const props = wip.pendingProps;
 	const child = Component(props);
+
+	// 重置
 	currentlyRenderingFiber = null;
 	return child;
 };
@@ -95,6 +98,7 @@ function mountWorkInProgressHook(): Hook {
 		updateQueue: null,
 		next: null,
 	};
+	// mount 时第一个hook
 	if (workInProgressHook === null) {
 		if (currentlyRenderingFiber === null) {
 			throw new Error('当前hook不在函数组件中');
