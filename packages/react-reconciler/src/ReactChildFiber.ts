@@ -8,11 +8,13 @@ import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
 import { HostText } from './ReactWorkTags';
 import { ChildDeletion, Placement } from './ReactFiberFlags';
 
+type ExistingChildren = Map<string | number, FiberNode>;
+
 /*
  * @Author: wy
  * @Date: 2024-03-25 11:37:36
  * @LastEditors: wy
- * @LastEditTime: 2024-04-18 15:50:35
+ * @LastEditTime: 2024-04-18 16:13:22
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactChildFiber.ts
  * @Description:
  */
@@ -137,7 +139,36 @@ function childReconciler(shouldTrackEffects: boolean) {
 		returnFiber: FiberNode,
 		currentFirstChild: FiberNode | null,
 		newChild: any[],
-	);
+	) {
+		// 1.current同级的fiber要保存在map中
+		const existingChildren: ExistingChildren = new Map();
+		let current = currentFirstChild;
+		while (current !== null) {
+			const keyToUse = current.key !== null ? current.key : current.index;
+			existingChildren.set(keyToUse, current);
+			current = current.sibling;
+		}
+		// 2.遍历newChild数组，遍历的每一个element会存在可以复用或者不能复用的情况
+		for (let i = 0; i < newChild.length; i++) {
+			const after = newChild[i];
+			// 3.判断是插入还是移动
+			const newFiber = updateFromMap(returnFiber, existingChildren, i, after);
+			if (newFiber === null) {
+				continue;
+			}
+		}
+	}
+
+	function updateFromMap(
+		returnFiber: FiberNode,
+		existingChildren: ExistingChildren,
+		index: number,
+		element: any,
+	): FiberNode | null {
+		const keyToUse = element.key !== null ? element.key : index;
+		const before = existingChildren.get(keyToUse);
+		return null;
+	}
 
 	return function reconcilerChildFibers(
 		returnFiber: FiberNode,
