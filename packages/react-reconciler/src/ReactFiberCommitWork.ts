@@ -2,14 +2,30 @@
  * @Author: wy
  * @Date: 2024-03-26 10:36:42
  * @LastEditors: wy
- * @LastEditTime: 2024-04-10 14:25:53
+ * @LastEditTime: 2024-04-16 17:18:30
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCommitWork.ts
  * @Description:
  */
-import { appendChildToContainer, commitUpdate, Container } from 'hostConfig';
+import {
+	appendChildToContainer,
+	commitUpdate,
+	Container,
+	removeChild,
+} from 'hostConfig';
 import { FiberNode, FiberRootNode } from './ReactFiber';
-import { MutationMask, NoFlags, Placement, Update } from './ReactFiberFlags';
-import { HostComponent, HostRoot, HostText } from './ReactWorkTags';
+import {
+	ChildDeletion,
+	MutationMask,
+	NoFlags,
+	Placement,
+	Update,
+} from './ReactFiberFlags';
+import {
+	FunctionComponent,
+	HostComponent,
+	HostRoot,
+	HostText,
+} from './ReactWorkTags';
 
 /**
  * 向下查找，找到fiberNode的节点是不是需要做副作用操作
@@ -57,7 +73,91 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
 		commitUpdate(finishedWork);
 		finishedWork.flags &= ~Update; // 更新完成了，把完成的标记取消
 	}
+	// 删除
+	if ((flags & ChildDeletion) !== NoFlags) {
+		const deletions = finishedWork.deletions;
+		if (deletions) {
+			deletions.forEach((childToDelete) => {
+				commitDeletion(childToDelete);
+			});
+		}
+
+		finishedWork.flags &= ~ChildDeletion; // 更新完成了，把完成的标记取消
+	}
 }
+
+/**
+ * 删除节点
+ * - 函数组件需要处理删除时的unMount情况，解绑ref
+ * - hostComponent解绑ref
+ * - 子树的根节点需要移除dom
+ */
+const commitDeletion = (childToDelete: FiberNode) => {
+	let rootHostNode: FiberNode | null = null; // 需要被删除节点的根节点
+	// 递归子树
+	commitNestedComponent(childToDelete, (unmountFiber) => {
+		switch (unmountFiber.tag) {
+			case HostComponent:
+				// todo
+				if (rootHostNode === null) {
+					rootHostNode = unmountFiber;
+				}
+				return;
+			case FunctionComponent:
+				// todo
+				// 处理useEffect的unmount
+				break;
+			case HostText:
+				if (rootHostNode === null) {
+					rootHostNode = unmountFiber;
+				}
+				return;
+			default:
+				if (__DEV__) {
+					console.warn('未实现的delete fiber', unmountFiber);
+				}
+				return;
+		}
+	});
+	// 移除rootHostNode的dom
+	if (rootHostNode !== null) {
+		const hostParent = getHostParent(childToDelete);
+		if (hostParent !== null) {
+			removeChild((rootHostNode as FiberNode).stateNode, hostParent);
+		}
+	}
+
+	childToDelete.return = null;
+	childToDelete.child = null;
+};
+
+const commitNestedComponent = (
+	root: FiberNode,
+	onCommitUnmount: (fiber: FiberNode) => void,
+) => {
+	let node = root;
+	while (true) {
+		onCommitUnmount(node);
+		if (node.child !== null) {
+			node.child.return = node;
+			node = node.child;
+			continue;
+		}
+
+		if (node === root) {
+			return;
+		}
+		while (node.sibling === null) {
+			if (node.return === null || node.return === root) {
+				return;
+			}
+			node = node.return;
+		}
+
+		node.sibling.return = node.return;
+		node = node.sibling;
+	}
+};
 
 const commitPlacement = (finishedWork: FiberNode) => {
 	if (__DEV__) {

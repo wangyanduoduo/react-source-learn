@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-04-08 14:01:12
+ * @LastEditTime: 2024-04-15 13:40:27
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
@@ -20,6 +20,7 @@ let workInProgressRoot: FiberNode | null; // 正在被执行的fiberNode
  */
 function prepareFreshStack(root: FiberRootNode) {
 	// root.current->hostRootFiber
+	// createWorkInProgress的mount之后hostRootFiber就有alternate了指向root.current
 	workInProgressRoot = createWorkInProgress(root.current, {});
 }
 
@@ -41,7 +42,7 @@ function markUpdateFromFiberToRoot(fiberNode: FiberNode) {
 		node = parent;
 		parent = node.return;
 	}
-	// 当前事hostRootFiber
+	// 当前是hostRootFiber
 	if (node.tag == HostRoot) {
 		return node.stateNode;
 	}
@@ -52,6 +53,8 @@ function markUpdateFromFiberToRoot(fiberNode: FiberNode) {
  * 触发更新的api调用这些方法
  */
 function renderRoot(root: FiberRootNode) {
+	// 创建wip
+	// 第一次是<App> 对应的wip
 	prepareFreshStack(root);
 	do {
 		try {

@@ -12,6 +12,7 @@ import {
 	HostText,
 } from './ReactWorkTags';
 import { NoFlags, Update } from './ReactFiberFlags';
+import { DOMElement, updateFiberProps } from 'react-dom/src/SyntheticEvent';
 
 /*
  * @Author: wy
@@ -33,13 +34,15 @@ export const completeWork = (wip: FiberNode) => {
 		case HostComponent:
 			if (current !== null && wip.stateNode) {
 				// update
+				// 临时方式
+				updateFiberProps(wip.stateNode as DOMElement, newProps);
 			} else {
 				// 构建dom
 				// dom插入dom树
 				// const instance = createInstance(wip.type, newProps);
-				const instance = createInstance(wip.type);
+				const instance = createInstance(wip.type, newProps);
 				appendAllChildren(instance, wip);
-				wip.stateNode = instance;
+				wip.stateNode = instance; // 为向上归的过程中，插入节点使用
 			}
 			bubbleProperties(wip);
 			return null;
@@ -52,7 +55,7 @@ export const completeWork = (wip: FiberNode) => {
 		case HostText:
 			if (current !== null && wip.stateNode) {
 				// update
-				const oldText = wip.memoizedProps.content;
+				const oldText = current.memoizedProps.content;
 				const newText = newProps.content;
 				if (oldText !== newText) {
 					markUpdate(wip);

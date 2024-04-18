@@ -1,11 +1,13 @@
 import { FiberNode } from 'react-reconciler/src/ReactFiber';
 import { HostText } from 'react-reconciler/src/ReactWorkTags';
+import { DOMElement, updateFiberProps } from './SyntheticEvent';
+import { Props } from 'shared/ReactTypes';
 
 /*
  * @Author: wy
  * @Date: 2024-02-29 10:23:35
  * @LastEditors: wy
- * @LastEditTime: 2024-04-10 14:29:40
+ * @LastEditTime: 2024-04-17 17:26:06
  * @FilePath: /react-source-learn/packages/react-dom/src/hostConfig.ts
  * @Description:
  */
@@ -13,9 +15,10 @@ export type Container = Element;
 export type Instance = Element;
 export type TextInstance = Text;
 
-export const createInstance = (type: string): Instance => {
-	const element = document.createElement(type);
-	return element;
+export const createInstance = (type: string, props: Props): Instance => {
+	const element = document.createElement(type) as unknown;
+	updateFiberProps(element as DOMElement, props);
+	return element as DOMElement;
 };
 
 export const appendInitialChild = (
@@ -36,10 +39,22 @@ export const commitUpdate = (fiber: FiberNode) => {
 		case HostText:
 			const text = fiber.memoizedProps.content;
 			// 更新text
-			commitText(fiber.stateNode, text);
+			return commitText(fiber.stateNode, text);
+		default:
+			if (__DEV__) {
+				console.warn('未实现的update', fiber);
+			}
+			break;
 	}
 };
 
 export const commitText = (textInstance: TextInstance, text: string) => {
 	textInstance.textContent = text;
+};
+
+export const removeChild = (
+	child: Instance | TextInstance,
+	container: Container,
+) => {
+	container.removeChild(child);
 };

@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-29 10:40:40
  * @LastEditors: wy
- * @LastEditTime: 2024-04-07 16:52:53
+ * @LastEditTime: 2024-04-15 13:23:58
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberReconciler.ts
  * @Description:
  */
@@ -27,6 +27,7 @@ export const createContainer = (container: Container) => {
 	const hostRootFiber = new FiberNode(HostRoot, {}, null);
 	const root = new FiberRootNode(container, hostRootFiber);
 	hostRootFiber.updateQueue = createUpdateQueue(); // 连接更新机制
+
 	return root;
 };
 
@@ -48,5 +49,6 @@ export const updateContainer = (
 		update,
 	);
 	scheduleUpdateOnFiber(hostRootFiber);
+
 	return element;
 };

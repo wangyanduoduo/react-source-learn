@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 14:43:41
  * @LastEditors: wy
- * @LastEditTime: 2024-04-09 17:58:46
+ * @LastEditTime: 2024-04-16 11:00:39
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiber.ts
  * @Description:
  */
@@ -74,6 +74,10 @@ export class FiberRootNode {
 	}
 }
 
+/**
+ * createWorkInProgress 在hostRootFiber的时候创建的时候，
+ * 创建第一个fiberNode,命中wip === null，为这个wip绑定了alternate
+ */
 export const createWorkInProgress = (
 	current: FiberNode,
 	pendingProps: Props,
@@ -92,6 +96,7 @@ export const createWorkInProgress = (
 		wip.pendingProps = pendingProps;
 		wip.flags = NoFlags; // 初始化所有副作用
 		wip.subtreeFlags = NoFlags; // 初始化所有副作用
+		wip.deletions = null;
 	}
 
 	// 复用current中的部分属性
