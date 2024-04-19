@@ -7,7 +7,7 @@ import { Props } from 'shared/ReactTypes';
  * @Author: wy
  * @Date: 2024-02-29 10:23:35
  * @LastEditors: wy
- * @LastEditTime: 2024-04-17 17:26:06
+ * @LastEditTime: 2024-04-19 17:44:48
  * @FilePath: /react-source-learn/packages/react-dom/src/hostConfig.ts
  * @Description:
  */
@@ -33,6 +33,14 @@ export const createTextInstance = (content: string) => {
 };
 
 export const appendChildToContainer = appendInitialChild;
+
+export const insertChildToContainer = (
+	child: Instance,
+	container: Container,
+	before: Instance,
+) => {
+	container.insertBefore(child, before);
+};
 
 export const commitUpdate = (fiber: FiberNode) => {
 	switch (fiber.tag) {

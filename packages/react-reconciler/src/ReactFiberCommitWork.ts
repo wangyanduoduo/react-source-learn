@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-26 10:36:42
  * @LastEditors: wy
- * @LastEditTime: 2024-04-16 17:18:30
+ * @LastEditTime: 2024-04-19 17:49:18
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCommitWork.ts
  * @Description:
  */
@@ -10,6 +10,8 @@ import {
 	appendChildToContainer,
 	commitUpdate,
 	Container,
+	insertChildToContainer,
+	Instance,
 	removeChild,
 } from 'hostConfig';
 import { FiberNode, FiberRootNode } from './ReactFiber';
@@ -166,11 +168,64 @@ const commitPlacement = (finishedWork: FiberNode) => {
 
 	// parentDOM 用于插入
 	const hostParent = getHostParent(finishedWork);
+	const sibling = getHostSibling(finishedWork);
 	// // 开始找被插入的节点Dom
 	if (hostParent) {
-		appendPlacementNodeIntoContainer(finishedWork, hostParent);
+		insertOrAppendPlacementNodeIntoContainer(finishedWork, hostParent, sibling);
 	}
 };
+/**
+ * 在处理多节点的时候，插入就单单是子插入父中，还有兄弟节点，依据兄弟节点插入
+ * 用于获取Fiber节点的宿主节点的兄弟节点
+ *
+ */
+function getHostSibling(fiber: FiberNode) {
+	let node: FiberNode = fiber;
+
+	findSibling: while (true) {
+		// 当sibling不存在的时候，需要向上查找
+		/**
+		 * 例如<Test/><div>
+		 * Test = return <div></div>
+		 * 向插入Test就需要向上查找到Test的兄弟div
+		 */
+		while (node.sibling === null) {
+			const parent = node.return;
+			// 如果到达根节点还未找到，则返回null。
+			if (
+				parent === null ||
+				parent.tag === HostComponent ||
+				parent.tag === HostRoot
+			) {
+				return null;
+			}
+			node = parent;
+		}
+
+		node.sibling.return = node.return;
+		node = node.sibling;
+
+		// 不是期望的可以使用的sibling，向下寻找可以使用的child节点
+		while (node.tag !== HostText && node.tag !== HostComponent) {
+			// 当前节点的flags是Placement说明这个节点也是需要被插入或者移动的节点，也不能作为一个可以依靠的sibling
+			if ((node.flags & Placement) !== NoFlags) {
+				continue findSibling;
+			}
+
+			if (node.child === null) {
+				// 没有child，也跳出findSibling
+				continue findSibling;
+			} else {
+				node.child.return = node;
+				node = node.child;
+			}
+		}
+		// node.tag === HostText && node.tag == HostComponent && node.flags 不是Placement，是满足需要使用的siblingNode
+		if ((node.flags & Placement) === NoFlags) {
+			return node.stateNode;
+		}
+	}
+}
 
 /**
  * 可以插入元素的父节点有HostComponent HostRoot的父节点
@@ -197,22 +252,27 @@ const getHostParent = (finishedWork: FiberNode) => {
  * 需要被插入的节点，这些节点就是HostComponent HostText对应的节点
  */
 
-const appendPlacementNodeIntoContainer = (
+const insertOrAppendPlacementNodeIntoContainer = (
 	finishedWork: FiberNode,
 	hostParent: Container,
+	before?: Instance,
 ) => {
 	if (finishedWork.tag === HostComponent || finishedWork.tag === HostText) {
-		appendChildToContainer(hostParent, finishedWork.stateNode);
+		if (before) {
+			insertChildToContainer(finishedWork.stateNode, hostParent, before);
+		} else {
+			appendChildToContainer(hostParent, finishedWork.stateNode);
+		}
 
 		return;
 	}
 	// // 继续查找需要被插入的节点
 	const child = finishedWork.child;
 	if (child !== null) {
-		appendPlacementNodeIntoContainer(child, hostParent);
+		insertOrAppendPlacementNodeIntoContainer(child, hostParent);
 		let sibling = child.sibling;
 		while (sibling !== null) {
-			appendPlacementNodeIntoContainer(sibling, hostParent);
+			insertOrAppendPlacementNodeIntoContainer(sibling, hostParent);
 			sibling = sibling.sibling;
 		}
 	}

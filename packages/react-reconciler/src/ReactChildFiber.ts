@@ -140,6 +140,10 @@ function childReconciler(shouldTrackEffects: boolean) {
 		currentFirstChild: FiberNode | null,
 		newChild: any[],
 	) {
+		// 最后一个可复用fiber在current中的位置
+		let lastPlacedIndex: number = 0;
+		let lastNewFiber: FiberNode | null = null;
+		let firstNewFiber: FiberNode | null = null;
 		// 1.current同级的fiber要保存在map中
 		const existingChildren: ExistingChildren = new Map();
 		let current = currentFirstChild;
@@ -151,14 +155,56 @@ function childReconciler(shouldTrackEffects: boolean) {
 		// 2.遍历newChild数组，遍历的每一个element会存在可以复用或者不能复用的情况
 		for (let i = 0; i < newChild.length; i++) {
 			const after = newChild[i];
-			// 3.判断是插入还是移动
+
 			const newFiber = updateFromMap(returnFiber, existingChildren, i, after);
+			// newFiber可能是复用的，可能是新创建的，可能是null
+			// {xx===xxx? && <xxx>} 这种情况产生的newFiber就可能是null
 			if (newFiber === null) {
 				continue;
 			}
+
+			// 3.判断是插入还是移动
+			newFiber.index = i;
+			newFiber.return = returnFiber;
+			if (lastNewFiber === null) {
+				lastNewFiber = newFiber;
+				firstNewFiber = newFiber;
+			} else {
+				lastNewFiber.sibling = newFiber;
+				lastNewFiber = lastNewFiber.sibling;
+			}
+
+			if (!shouldTrackEffects) {
+				continue;
+			}
+			// 在newFiber之前的信息
+			const current = newFiber.alternate;
+			if (current !== null) {
+				// update
+				const oldIndex = current.index;
+				if (oldIndex < lastPlacedIndex) {
+					// 移动
+					newFiber.flags |= Placement;
+					continue;
+				} else {
+					// 位置没有变，更新lastPlacedIndex
+					lastPlacedIndex = oldIndex;
+				}
+			} else {
+				// mount
+				// 新的fiber插入
+				newFiber.flags |= Placement;
+			}
 		}
+
+		// 4.map中剩下的不可复用的都标记删除
+		existingChildren.forEach((fiber) => {
+			deleteChild(returnFiber, fiber);
+		});
+		return firstNewFiber;
 	}
 
+	// 处理节点的复用情况
 	function updateFromMap(
 		returnFiber: FiberNode,
 		existingChildren: ExistingChildren,
@@ -167,6 +213,39 @@ function childReconciler(shouldTrackEffects: boolean) {
 	): FiberNode | null {
 		const keyToUse = element.key !== null ? element.key : index;
 		const before = existingChildren.get(keyToUse);
+		// 文本节点 HostText
+		if (typeof element === 'string' || typeof element === 'number') {
+			if (before) {
+				// 找到可以复用的节点之后，把保存信息删除
+				if (before.tag === HostText) {
+					existingChildren.delete(keyToUse);
+					return useFiber(before, { content: element + '' });
+				}
+			}
+			// 可复用节点不存在，创建新新的节点
+			return new FiberNode(HostText, { content: element + '' }, null);
+		}
+
+		// element是reactElement节点
+		if (typeof element === 'object' || element !== null) {
+			switch (element.$$typeof) {
+				case REACT_ELEMENT_TYPE:
+					if (before) {
+						if (before.type === element.type) {
+							existingChildren.delete(keyToUse);
+							return useFiber(before, element.props);
+						}
+					}
+					return createFiberFromElement(element);
+				default:
+					break;
+			}
+		}
+		// element是数组/fragment的情况
+		if (Array.isArray(element) && __DEV__) {
+			console.warn('还未实现的数组类型的element', element);
+			return null;
+		}
 		return null;
 	}
 
