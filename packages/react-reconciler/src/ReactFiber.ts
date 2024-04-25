@@ -2,20 +2,26 @@
  * @Author: wy
  * @Date: 2024-02-27 14:43:41
  * @LastEditors: wy
- * @LastEditTime: 2024-04-16 11:00:39
+ * @LastEditTime: 2024-04-24 16:39:14
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiber.ts
  * @Description:
  */
 import { Key, Ref, Props, ReactElement } from 'shared/ReactTypes';
-import { FunctionComponent, HostComponent, WorkTag } from './ReactWorkTags';
+import {
+	FunctionComponent,
+	HostComponent,
+	WorkTag,
+	Fragment,
+} from './ReactWorkTags';
 import { Flags, NoFlags } from './ReactFiberFlags';
 import { Container } from 'hostConfig';
+import { Lane, Lanes, NoLane, NoLanes } from './ReactFiberLane';
 
 export class FiberNode {
 	tag: WorkTag; // fiberNode 是什么类型的节点
 	ref: Ref;
 
-	key: Key;
+	key: Key | null;
 	stateNode: any; // 当前fiberNode对应的真实的dom 例如 div hostRootFiber的stateNode指向fiberRootNode
 	type: any; // 对应的element的函数， 例如functionComponent的函数，如果节点是一个函数，type就是函数本身
 
@@ -37,7 +43,7 @@ export class FiberNode {
 	constructor(tag: WorkTag, pendingProps: Props, key: Key) {
 		this.tag = tag;
 		this.ref = null;
-		this.key = key;
+		this.key = key || null;
 		this.stateNode = null;
 		this.type = null;
 
@@ -65,12 +71,16 @@ export class FiberRootNode {
 	container: Container;
 	current: FiberNode;
 	finishedWork: FiberNode | null;
+	pendingLanes: Lanes;
+	finishedLane: Lane;
 
 	constructor(container: Container, hostRootFiber: FiberNode) {
 		this.container = container;
 		this.current = hostRootFiber;
 		hostRootFiber.stateNode = this;
 		this.finishedWork = null;
+		this.pendingLanes = NoLanes;
+		this.finishedLane = NoLane;
 	}
 }
 
@@ -119,5 +129,10 @@ export function createFiberFromElement(element: ReactElement) {
 
 	const fiber = new FiberNode(fiberTag, props, key);
 	fiber.type = type;
+	return fiber;
+}
+
+export function createFiberFromFragment(elements: any[], key: Key): FiberNode {
+	const fiber = new FiberNode(Fragment, elements, key);
 	return fiber;
 }

@@ -3,11 +3,11 @@
  * @Author: wy
  * @Date: 2024-02-26 15:44:03
  * @LastEditors: wy
- * @LastEditTime: 2024-04-07 14:42:31
+ * @LastEditTime: 2024-04-23 17:45:36
  * @FilePath: /react-source-learn/packages/react/src/jsx.ts
  * @Description:
  */
-import { REACT_ELEMENT_TYPE } from 'shared/ReactSymbols';
+import { REACT_ELEMENT_TYPE, REACT_FRAGMENT_TYPE } from 'shared/ReactSymbols';
 import type {
 	Type,
 	Key,
@@ -99,6 +99,8 @@ export const jsxDEV = (type: ElementType, config: any) => {
 
 	return ReactElement(type, key, ref, props);
 };
+
+export const Fragment = REACT_FRAGMENT_TYPE;
 
 export function isValidElement(object: any) {
 	return (

@@ -2,13 +2,14 @@
  * @Author: wy
  * @Date: 2024-02-27 18:05:43
  * @LastEditors: wy
- * @LastEditTime: 2024-03-28 13:35:41
+ * @LastEditTime: 2024-04-24 16:24:13
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberClassUpdateQueue.ts
  * @Description:
  */
 
 import { Dispatch } from 'react/src/currentDispatcher';
 import { Action } from 'shared/ReactTypes';
+import { Lane } from './ReactFiberLane';
 
 /**
  * update有一个action(源码中是callback),处理更新
@@ -17,6 +18,8 @@ import { Action } from 'shared/ReactTypes';
  */
 export interface Update<State> {
 	action: Action<State>;
+	lane: Lane;
+	next: Update<any> | null;
 }
 
 /**
@@ -33,9 +36,14 @@ export interface UpdateQueue<State> {
 	dispatch: Dispatch<State> | null;
 }
 
-export const createUpdate = <State>(action: Action<State>): Update<State> => {
+export const createUpdate = <State>(
+	action: Action<State>,
+	lane: Lane,
+): Update<State> => {
 	return {
 		action,
+		lane,
+		next: null,
 	};
 };
 
@@ -59,6 +67,14 @@ export const enqueueUpdate = <State>(
 	updateQueue: UpdateQueue<State>,
 	update: Update<State>,
 ) => {
+	// 链表结构，保存所有的update，完成批处理
+	const pending = updateQueue.shared.pending;
+	if (pending === null) {
+		update.next = update;
+	} else {
+		update.next = pending.next;
+		pending.next = update;
+	}
 	updateQueue.shared.pending = update;
 };
 

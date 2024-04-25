@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 15:35:11
  * @LastEditors: wy
- * @LastEditTime: 2024-04-15 14:21:37
+ * @LastEditTime: 2024-04-23 17:04:36
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberBeginWork.ts
  * @Description:
  */
@@ -10,6 +10,7 @@ import { ReactElement } from 'shared/ReactTypes';
 import { FiberNode } from './ReactFiber';
 import { processUpdateQueue, UpdateQueue } from './ReactFiberClassUpdateQueue';
 import {
+	Fragment,
 	FunctionComponent,
 	HostComponent,
 	HostRoot,
@@ -35,6 +36,8 @@ export const beginWork = (wip: FiberNode) => {
 			return updateHostComponent(wip);
 		case FunctionComponent:
 			return updateFunctionComponent(wip);
+		case Fragment:
+			return updateFragment(wip);
 		case HostText:
 			return null;
 		default:
@@ -49,6 +52,12 @@ export const beginWork = (wip: FiberNode) => {
  * processUpdateQueue计算状态的最新值
  *
  */
+
+const updateFragment = (wip: FiberNode) => {
+	const nextChildren = wip.pendingProps;
+	reconcilerChildren(wip, nextChildren);
+	return wip.child;
+};
 
 const updateHostRoot = (wip: FiberNode) => {
 	const baseState = wip.memoizedState;

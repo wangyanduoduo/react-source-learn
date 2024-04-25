@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-26 10:36:42
  * @LastEditors: wy
- * @LastEditTime: 2024-04-19 17:49:18
+ * @LastEditTime: 2024-04-23 17:34:15
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberCommitWork.ts
  * @Description:
  */
@@ -87,6 +87,24 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
 		finishedWork.flags &= ~ChildDeletion; // 更新完成了，把完成的标记取消
 	}
 }
+function recordHostChildrenToDelete(
+	childrenToDelete: FiberNode[],
+	unmountFiber: FiberNode,
+) {
+	// 找到第一个root host节点
+	const lastOne = childrenToDelete[childrenToDelete.length - 1];
+	if (!lastOne) {
+		childrenToDelete.push(unmountFiber);
+	} else {
+		let node = lastOne.sibling;
+		while (node !== null) {
+			if (unmountFiber === node) {
+				childrenToDelete.push(unmountFiber);
+			}
+			node = node.sibling;
+		}
+	}
+}
 
 /**
  * 删除节点
@@ -95,24 +113,27 @@ function commitMutationEffectsOnFiber(finishedWork: FiberNode) {
  * - 子树的根节点需要移除dom
  */
 const commitDeletion = (childToDelete: FiberNode) => {
-	let rootHostNode: FiberNode | null = null; // 需要被删除节点的根节点
+	// 删除节点时需要找到父节点，但是中间可能存在fragment
+	const rootChildrenToDelete: FiberNode[] = []; // 需要被删除节点的根节点
 	// 递归子树
 	commitNestedComponent(childToDelete, (unmountFiber) => {
 		switch (unmountFiber.tag) {
 			case HostComponent:
 				// todo
-				if (rootHostNode === null) {
-					rootHostNode = unmountFiber;
-				}
+				// if (rootHostNode === null) {
+				// 	rootHostNode = unmountFiber;
+				// }
+				recordHostChildrenToDelete(rootChildrenToDelete, unmountFiber);
 				return;
 			case FunctionComponent:
 				// todo
 				// 处理useEffect的unmount
 				break;
 			case HostText:
-				if (rootHostNode === null) {
-					rootHostNode = unmountFiber;
-				}
+				// if (rootHostNode === null) {
+				// 	rootHostNode = unmountFiber;
+				// }
+				recordHostChildrenToDelete(rootChildrenToDelete, unmountFiber);
 				return;
 			default:
 				if (__DEV__) {
@@ -122,10 +143,12 @@ const commitDeletion = (childToDelete: FiberNode) => {
 		}
 	});
 	// 移除rootHostNode的dom
-	if (rootHostNode !== null) {
+	if (rootChildrenToDelete.length) {
 		const hostParent = getHostParent(childToDelete);
 		if (hostParent !== null) {
-			removeChild((rootHostNode as FiberNode).stateNode, hostParent);
+			rootChildrenToDelete.forEach((rootHostNode) => {
+				removeChild(rootHostNode.stateNode, hostParent);
+			});
 		}
 	}
 

@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-27 11:24:07
  * @LastEditors: wy
- * @LastEditTime: 2024-04-16 17:15:36
+ * @LastEditTime: 2024-04-24 16:41:15
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberHooks.ts
  * @Description:
  */
@@ -18,6 +18,7 @@ import {
 } from './ReactFiberClassUpdateQueue';
 import { Action } from 'shared/ReactTypes';
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
+import { requestUpdateLane } from './ReactFiberLane';
 const { currentDispatcher } = internals;
 
 /**
@@ -111,9 +112,10 @@ function dispatchSetState<State>(
 	updateQueue: UpdateQueue<State>,
 	action: Action<State>,
 ) {
-	const update = createUpdate(action);
+	const lane = requestUpdateLane();
+	const update = createUpdate(action, lane);
 	enqueueUpdate(updateQueue, update);
-	scheduleUpdateOnFiber(fiber);
+	scheduleUpdateOnFiber(fiber, lane);
 }
 
 function mountWorkInProgressHook(): Hook {

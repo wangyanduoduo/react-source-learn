@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-04-15 13:40:27
+ * @LastEditTime: 2024-04-24 16:52:35
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
@@ -11,6 +11,7 @@ import { beginWork } from './ReactFiberBeginWork';
 import { commitMutationEffects } from './ReactFiberCommitWork';
 import { completeWork } from './ReactFiberCompleteWork';
 import { MutationMask, NoFlags } from './ReactFiberFlags';
+import { Lane, mergeLanes } from './ReactFiberLane';
 import { HostRoot } from './ReactWorkTags';
 let workInProgressRoot: FiberNode | null; // 正在被执行的fiberNode
 
@@ -27,9 +28,17 @@ function prepareFreshStack(root: FiberRootNode) {
 /**
  * 目的是获取到fiberRootNode
  */
-export function scheduleUpdateOnFiber(fiberNode: FiberNode) {
+export function scheduleUpdateOnFiber(fiberNode: FiberNode, lane: Lane) {
 	const root = markUpdateFromFiberToRoot(fiberNode);
+	markRootUpdated(root, lane);
 	renderRoot(root);
+}
+
+/**
+ * 标记根节点的pendingLanes
+ */
+function markRootUpdated(root: FiberRootNode, lane: Lane) {
+	root.pendingLanes = mergeLanes(root.pendingLanes, lane);
 }
 
 /**
