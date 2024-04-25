@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-04-24 15:32:01
  * @LastEditors: wy
- * @LastEditTime: 2024-04-24 16:22:16
+ * @LastEditTime: 2024-04-25 13:58:48
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberLane.ts
  * @Description:
  */
@@ -29,4 +29,11 @@ export function mergeLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes {
 
 export function requestUpdateLane(): Lane {
 	return SyncLane;
+}
+
+/**
+ * 获取优先级最高的lane
+ */
+export function getHighestPriorityLane(lanes: Lanes): Lane {
+	return lanes & -lanes;
 }

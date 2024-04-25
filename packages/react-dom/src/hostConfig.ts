@@ -7,7 +7,7 @@ import { Props } from 'shared/ReactTypes';
  * @Author: wy
  * @Date: 2024-02-29 10:23:35
  * @LastEditors: wy
- * @LastEditTime: 2024-04-19 17:44:48
+ * @LastEditTime: 2024-04-25 14:35:41
  * @FilePath: /react-source-learn/packages/react-dom/src/hostConfig.ts
  * @Description:
  */
@@ -66,3 +66,11 @@ export const removeChild = (
 ) => {
 	container.removeChild(child);
 };
+
+export const scheduleMicrotask =
+	typeof queueMicrotask === 'function'
+		? queueMicrotask
+		: typeof Promise === 'function'
+			? (callback: (...args: any) => void) =>
+					Promise.resolve(null).then(callback)
+			: setTimeout;

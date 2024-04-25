@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 14:43:41
  * @LastEditors: wy
- * @LastEditTime: 2024-04-24 16:39:14
+ * @LastEditTime: 2024-04-25 11:45:34
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiber.ts
  * @Description:
  */
@@ -71,8 +71,8 @@ export class FiberRootNode {
 	container: Container;
 	current: FiberNode;
 	finishedWork: FiberNode | null;
-	pendingLanes: Lanes;
-	finishedLane: Lane;
+	pendingLanes: Lanes; // 需要被处理的lanes
+	finishedLane: Lane; // 已经处理的lane
 
 	constructor(container: Container, hostRootFiber: FiberNode) {
 		this.container = container;

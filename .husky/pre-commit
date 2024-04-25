@@ -2,10 +2,12 @@
  # @Author: wy
  # @Date: 2024-02-26 11:10:31
  # @LastEditors: wy
- # @LastEditTime: 2024-02-27 11:10:12
- # @FilePath: /笔记/react-source-learn/.husky/pre-commit
+ # @LastEditTime: 2024-04-25 17:31:23
+ # @FilePath: /react-source-learn/.husky/pre-commit
  # @Description: 
 ### 
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
+
+# 获取 pnpm 路径
 pnpm lint
