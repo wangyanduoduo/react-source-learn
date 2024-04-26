@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-26 17:21:07
  * @LastEditors: wy
- * @LastEditTime: 2024-04-07 14:23:30
+ * @LastEditTime: 2024-04-26 18:07:19
  * @FilePath: /react-source-learn/packages/react/index.ts
  * @Description:
  */
@@ -15,6 +15,12 @@ export const useState: Dispatcher['useState'] = (initialState) => {
 	const dispatcher = resolveDispatcher();
 	return dispatcher.useState(initialState);
 };
+
+export const useEffect: Dispatcher['useEffect'] = (create, deps) => {
+	const dispatcher = resolveDispatcher();
+	return dispatcher.useEffect(create, deps);
+};
+
 // 内部共享数据
 export const __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = {
 	currentDispatcher,

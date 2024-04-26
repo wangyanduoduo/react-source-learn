@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-27 11:24:07
  * @LastEditors: wy
- * @LastEditTime: 2024-04-26 13:45:29
+ * @LastEditTime: 2024-04-26 18:01:23
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberHooks.ts
  * @Description:
  */
@@ -19,11 +19,13 @@ import {
 import { Action } from 'shared/ReactTypes';
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
 import { Lane, NoLane, requestUpdateLane } from './ReactFiberLane';
+import { Flags, PassiveEffect } from './ReactFiberFlags';
+import { HasEffect, Passive } from './ReactHookEffectTags';
 const { currentDispatcher } = internals;
 
 /**
  * 处理每一个fiberNode对应的hooks
- * 每一个fiberNode可能有多个hook，所以hook也是一个链表，通过memoizedState连接
+ * 每一个fiberNode可能有多个hook，所以hook也是一个链表，通过next连接
  * hook存放在fiberNode上的memoizedState上
  */
 interface Hook {
@@ -31,6 +33,21 @@ interface Hook {
 	updateQueue: unknown;
 	next: Hook | null;
 }
+
+export interface Effect {
+	tag: Flags;
+	create: EffectCallback | void;
+	destroy: EffectCallback | void;
+	deps: EffectDeps;
+	next: Effect | null;
+}
+
+export interface FCUpdateQueue<State> extends UpdateQueue<State> {
+	lastEffect: Effect | null;
+}
+
+type EffectCallback = () => void;
+type EffectDeps = any[] | null;
 
 // 当前正在执行的fiber
 let currentlyRenderingFiber: FiberNode | null = null;
@@ -69,11 +86,67 @@ export const renderWithHooks = (wip: FiberNode, lane: Lane) => {
 
 const HooksDispatcherOnMount: Dispatcher = {
 	useState: mountState,
+	useEffect: mountEffect,
 };
 
 const HooksDispatcherOnUpdate: Dispatcher = {
 	useState: updateState,
 };
+
+function mountEffect(create: EffectCallback | void, deps: EffectDeps | void) {
+	const hook = mountWorkInProgressHook();
+	const nextDeps = deps === undefined ? null : deps;
+	// 对fiber做作用标记
+	(currentlyRenderingFiber as FiberNode).flags |= PassiveEffect;
+	hook.memoizedState = pushEffect(
+		Passive | HasEffect,
+		create,
+		undefined,
+		nextDeps,
+	);
+}
+
+function pushEffect(
+	hookFlags: Flags,
+	create: EffectCallback | void,
+	destroy: EffectCallback | void,
+	deps: EffectDeps,
+) {
+	const effect: Effect = {
+		tag: hookFlags,
+		create,
+		destroy,
+		deps,
+		next: null,
+	};
+
+	const fiber = currentlyRenderingFiber as FiberNode;
+	const updateQueue = fiber.updateQueue as FCUpdateQueue<any>;
+	if (updateQueue === null) {
+		const updateQueue = createFCUpdateQueue();
+		fiber.updateQueue = updateQueue;
+		effect.next = effect;
+		updateQueue.lastEffect = effect;
+	} else {
+		const lastEffect = updateQueue.lastEffect;
+		if (lastEffect === null) {
+			effect.next = effect;
+			updateQueue.lastEffect = effect;
+		} else {
+			const firstEffect = effect.next;
+			lastEffect.next = effect;
+			effect.next = firstEffect;
+			updateQueue.lastEffect = effect;
+		}
+	}
+
+	return effect;
+}
+function createFCUpdateQueue<State>() {
+	const updateQueue = createUpdateQueue<State>() as FCUpdateQueue<State>;
+	updateQueue.lastEffect = null;
+	return updateQueue;
+}
 
 function updateState<State>(): [State, Dispatch<State>] {
 	// 找到当前useState 对应的数据
