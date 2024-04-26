@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-04-25 14:15:34
  * @LastEditors: wy
- * @LastEditTime: 2024-04-25 14:21:52
+ * @LastEditTime: 2024-04-26 13:46:10
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactSyncTaskQueue.ts
  * @Description:
  */
@@ -34,6 +34,7 @@ export function flushSyncCallbacks() {
 			}
 		} finally {
 			isFlushingSyncQueue = false;
+			syncQueue = null;
 		}
 	}
 }

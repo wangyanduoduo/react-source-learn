@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 15:34:40
  * @LastEditors: wy
- * @LastEditTime: 2024-04-25 15:03:27
+ * @LastEditTime: 2024-04-26 11:15:50
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberWorkLoop.ts
  * @Description:
  */
@@ -15,6 +15,7 @@ import { MutationMask, NoFlags } from './ReactFiberFlags';
 import {
 	getHighestPriorityLane,
 	Lane,
+	markRootFinished,
 	mergeLanes,
 	NoLane,
 	SyncLane,
@@ -22,15 +23,17 @@ import {
 import { flushSyncCallbacks, scheduleSyncCallback } from './ReactSyncTaskQueue';
 import { HostRoot } from './ReactWorkTags';
 let workInProgressRoot: FiberNode | null; // 正在被执行的fiberNode
+let wipRootRenderLane: Lane = NoLane; // 本次更新的lane
 
 /**
  * 初始化操作，把workInProgressRoot指向第一个fiberNode,对应根节点
  * @param root
  */
-function prepareFreshStack(root: FiberRootNode) {
+function prepareFreshStack(root: FiberRootNode, lane: Lane) {
 	// root.current->hostRootFiber
 	// createWorkInProgress的mount之后hostRootFiber就有alternate了指向root.current
 	workInProgressRoot = createWorkInProgress(root.current, {});
+	wipRootRenderLane = lane;
 }
 
 /**
@@ -107,13 +110,16 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
 	if (nextLanes !== SyncLane) {
 		// 目前统一设置的pendingLanes === SyncLane
 		// 当前的if就表示优先级比SyncLane低，或者是NoLane
-		ensureRootIsScheduled(root);
+		ensureRootIsScheduled(root); // 为了以防万一
 		return;
 	}
 
+	if (__DEV__) {
+		console.warn('render阶段开始');
+	}
 	// 创建wip
 	// 第一次是<App> 对应的wip
-	prepareFreshStack(root);
+	prepareFreshStack(root, lane);
 	do {
 		try {
 			workLoop();
@@ -127,8 +133,12 @@ function performSyncWorkOnRoot(root: FiberRootNode, lane: Lane) {
 		}
 	} while (true);
 	// 获取到完成递归的fiberTree
+
 	const finishedWork = root.current.alternate;
 	root.finishedWork = finishedWork;
+	root.finishedLane = lane; // 保存本次更新的数据
+	// 本次更新结束，重置数据
+	wipRootRenderLane = NoLane;
 	/**
 	 * commit 阶段包含如下2个步骤
 	 * - beforeMutation
@@ -146,8 +156,15 @@ function commitRoot(root: FiberRootNode) {
 	if (__DEV__) {
 		console.warn('commit阶段开始', finishedWork);
 	}
+	const lane = root.finishedLane;
+	if (lane === NoLane && __DEV__) {
+		console.error('commit阶段finishedLane不因该是NoLane');
+	}
 	// 重置
 	root.finishedWork = null;
+	root.finishedLane = NoLane;
+
+	markRootFinished(root, lane);
 
 	const subtreeHasEffect =
 		(finishedWork.subtreeFlags & MutationMask) !== NoFlags;
@@ -171,7 +188,7 @@ function workLoop() {
 
 // 递操作
 function performUnitOfWork(fiber: FiberNode) {
-	const next = beginWork(fiber); // 子fiberNode
+	const next = beginWork(fiber, wipRootRenderLane); // 子fiberNode
 	fiber.memoizedProps = fiber.pendingProps;
 	if (next !== null) {
 		// next存在继续递操作

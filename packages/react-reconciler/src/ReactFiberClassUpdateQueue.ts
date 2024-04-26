@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 18:05:43
  * @LastEditors: wy
- * @LastEditTime: 2024-04-24 16:24:13
+ * @LastEditTime: 2024-04-26 10:55:48
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberClassUpdateQueue.ts
  * @Description:
  */
@@ -87,7 +87,8 @@ export const enqueueUpdate = <State>(
  */
 export const processUpdateQueue = <State>(
 	baseState: State,
-	pendingState: Update<State> | null,
+	pendingUpdate: Update<State> | null,
+	renderLane: Lane,
 ): {
 	memoizedState: State;
 } => {
@@ -95,14 +96,29 @@ export const processUpdateQueue = <State>(
 		memoizedState: baseState,
 	};
 
-	if (pendingState) {
-		const action = pendingState.action;
-		if (action instanceof Function) {
-			result.memoizedState = action(baseState);
-		} else {
-			result.memoizedState = action;
-		}
+	if (pendingUpdate) {
+		// update是链表，要遍历链表上所有的update
+		const first = pendingUpdate.next;
+		let pending = pendingUpdate.next as Update<any>;
+
+		do {
+			const updateLane = pending.lane;
+			if (updateLane === renderLane) {
+				const action = pendingUpdate.action;
+				if (action instanceof Function) {
+					baseState = action(baseState);
+				} else {
+					baseState = action;
+				}
+			} else {
+				if (__DEV__) {
+					console.error('不因该进入updateLane !== renderLane');
+				}
+			}
+			pending = pending.next as Update<any>;
+		} while (first !== pending);
 	}
+	result.memoizedState = baseState;
 
 	return result;
 };

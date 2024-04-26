@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-03-27 11:24:07
  * @LastEditors: wy
- * @LastEditTime: 2024-04-24 16:41:15
+ * @LastEditTime: 2024-04-26 13:45:29
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberHooks.ts
  * @Description:
  */
@@ -18,7 +18,7 @@ import {
 } from './ReactFiberClassUpdateQueue';
 import { Action } from 'shared/ReactTypes';
 import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
-import { requestUpdateLane } from './ReactFiberLane';
+import { Lane, NoLane, requestUpdateLane } from './ReactFiberLane';
 const { currentDispatcher } = internals;
 
 /**
@@ -39,8 +39,11 @@ let workInProgressHook: Hook | null = null;
 // update的hook
 let currentHook: Hook | null = null;
 
-export const renderWithHooks = (wip: FiberNode) => {
+let renderLane: Lane = NoLane;
+
+export const renderWithHooks = (wip: FiberNode, lane: Lane) => {
 	// 赋值
+	renderLane = lane;
 	currentlyRenderingFiber = wip;
 	wip.memoizedState = null; // 重置
 	const current = wip.alternate;
@@ -60,6 +63,7 @@ export const renderWithHooks = (wip: FiberNode) => {
 	currentlyRenderingFiber = null;
 	workInProgressHook = null;
 	currentHook = null;
+	renderLane = NoLane;
 	return child;
 };
 
@@ -77,8 +81,13 @@ function updateState<State>(): [State, Dispatch<State>] {
 
 	const queue = hook.updateQueue as UpdateQueue<State>;
 	const pending = queue.shared.pending;
+	queue.shared.pending = null;
 	if (pending !== null) {
-		const { memoizedState } = processUpdateQueue(hook.memoizedState, pending);
+		const { memoizedState } = processUpdateQueue(
+			hook.memoizedState,
+			pending,
+			renderLane,
+		);
 		hook.memoizedState = memoizedState;
 	}
 	return [hook.memoizedState, queue.dispatch as Dispatch<State>];

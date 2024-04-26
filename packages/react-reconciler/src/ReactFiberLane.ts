@@ -1,8 +1,10 @@
+import { FiberRootNode } from './ReactFiber';
+
 /*
  * @Author: wy
  * @Date: 2024-04-24 15:32:01
  * @LastEditors: wy
- * @LastEditTime: 2024-04-25 13:58:48
+ * @LastEditTime: 2024-04-26 11:11:54
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberLane.ts
  * @Description:
  */
@@ -36,4 +38,9 @@ export function requestUpdateLane(): Lane {
  */
 export function getHighestPriorityLane(lanes: Lanes): Lane {
 	return lanes & -lanes;
+}
+
+// 移除lane
+export function markRootFinished(root: FiberRootNode, lane: Lane) {
+	root.pendingLanes &= ~lane;
 }

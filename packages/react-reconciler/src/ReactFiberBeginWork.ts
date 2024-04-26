@@ -2,7 +2,7 @@
  * @Author: wy
  * @Date: 2024-02-27 15:35:11
  * @LastEditors: wy
- * @LastEditTime: 2024-04-23 17:04:36
+ * @LastEditTime: 2024-04-26 10:59:14
  * @FilePath: /react-source-learn/packages/react-reconciler/src/ReactFiberBeginWork.ts
  * @Description:
  */
@@ -21,21 +21,22 @@ import {
 	reconcileChildrenFibers,
 } from './ReactChildFiber';
 import { renderWithHooks } from './ReactFiberHooks';
+import { Lane } from './ReactFiberLane';
 /**
  * 寻找子节点
  * @param fiber
  * @returns
  */
-export const beginWork = (wip: FiberNode) => {
+export const beginWork = (wip: FiberNode, renderLane: Lane) => {
 	const tag = wip.tag;
 
 	switch (tag) {
 		case HostRoot:
-			return updateHostRoot(wip);
+			return updateHostRoot(wip, renderLane);
 		case HostComponent:
 			return updateHostComponent(wip);
 		case FunctionComponent:
-			return updateFunctionComponent(wip);
+			return updateFunctionComponent(wip, renderLane);
 		case Fragment:
 			return updateFragment(wip);
 		case HostText:
@@ -59,13 +60,13 @@ const updateFragment = (wip: FiberNode) => {
 	return wip.child;
 };
 
-const updateHostRoot = (wip: FiberNode) => {
+const updateHostRoot = (wip: FiberNode, renderLane: Lane) => {
 	const baseState = wip.memoizedState;
 	const updateQueue = wip.updateQueue as UpdateQueue<Element>;
 	const pending = updateQueue.shared.pending; // 新的属性，用于更新赋值
 	updateQueue.shared.pending = null; // 新值被使用了，就把旧值变成null
 	// 开始更新
-	const { memoizedState } = processUpdateQueue(baseState, pending);
+	const { memoizedState } = processUpdateQueue(baseState, pending, renderLane);
 	wip.memoizedState = memoizedState;
 
 	// 创建子fiberNode
@@ -85,8 +86,8 @@ function updateHostComponent(wip: FiberNode) {
 	return wip.child;
 }
 
-function updateFunctionComponent(wip: FiberNode) {
-	reconcilerChildren(wip, renderWithHooks(wip));
+function updateFunctionComponent(wip: FiberNode, renderLane: Lane) {
+	reconcilerChildren(wip, renderWithHooks(wip, renderLane));
 	return wip.child;
 }
 
